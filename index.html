@@ -25,7 +25,7 @@
             max-width: 600px;
             margin: 0 auto;
         }
-        input[type="text"], input[type="number"], select {
+        input[type="text"], input[type="number"], input[type="datetime-local"], select {
             width: calc(100% - 20px);
             padding: 10px;
             margin-bottom: 15px;
@@ -89,100 +89,6 @@
             background-color: #003366;
         }
     </style>
-    <script>
-        document.addEventListener("DOMContentLoaded", loadShips);
-
-function addShip() {
-    const shipName = document.getElementById("shipName").value;
-    const cargoAmount = document.getElementById("cargoAmount").value;
-    const cargoType = document.getElementById("cargoType").value;
-    const arrivalPort = document.getElementById("arrivalPort").value;
-    const destinationPort = document.getElementById("destinationPort").value;
-    const employer = document.getElementById("employer").value;
-    const paymentReceived = document.getElementById("paymentReceived").checked ? "Evet" : "Hayır";
-    const documentsReceived = document.getElementById("documentsReceived").checked ? "Evet" : "Hayır";
-    const preArrivalsReceived = document.getElementById("preArrivalsReceived").checked ? "Evet" : "Hayır";
-
-    const newShip = {
-        shipName, cargoAmount, cargoType, arrivalPort, destinationPort, employer, paymentReceived, documentsReceived, preArrivalsReceived
-    };
-
-    let ships = JSON.parse(localStorage.getItem("ships")) || [];
-    ships.push(newShip);
-    localStorage.setItem("ships", JSON.stringify(ships));
-
-    appendShipToTable(newShip);
-    document.getElementById("shipForm").reset();
-}
-
-function appendShipToTable(ship) {
-    const table = document.getElementById("shipTable").getElementsByTagName('tbody')[0];
-    const newRow = table.insertRow();
-
-    newRow.insertCell(0).innerText = ship.shipName;
-    newRow.insertCell(1).innerText = ship.cargoAmount;
-    newRow.insertCell(2).innerText = ship.cargoType;
-    newRow.insertCell(3).innerText = ship.arrivalPort;
-    newRow.insertCell(4).innerText = ship.destinationPort;
-    newRow.insertCell(5).innerText = ship.employer;
-    newRow.insertCell(6).innerText = ship.paymentReceived;
-    newRow.insertCell(7).innerText = ship.documentsReceived;
-    newRow.insertCell(8).innerText = ship.preArrivalsReceived;
-
-    const actionsCell = newRow.insertCell(9);
-    const editButton = document.createElement("button");
-    editButton.innerText = "Düzenle";
-    editButton.onclick = function() { editShip(newRow, ship); };
-    const deleteButton = document.createElement("button");
-    deleteButton.innerText = "Sil";
-    deleteButton.onclick = function() { deleteShip(newRow, ship); };
-    
-    actionsCell.classList.add('action-buttons');
-    actionsCell.appendChild(editButton);
-    actionsCell.appendChild(deleteButton);
-}
-
-function loadShips() {
-    const ships = JSON.parse(localStorage.getItem("ships")) || [];
-    ships.forEach(ship => appendShipToTable(ship));
-}
-
-function editShip(row, ship) {
-    document.getElementById("shipName").value = ship.shipName;
-    document.getElementById("cargoAmount").value = ship.cargoAmount;
-    document.getElementById("cargoType").value = ship.cargoType;
-    document.getElementById("arrivalPort").value = ship.arrivalPort;
-    document.getElementById("destinationPort").value = ship.destinationPort;
-    document.getElementById("employer").value = ship.employer;
-    document.getElementById("paymentReceived").checked = ship.paymentReceived === "Evet";
-    document.getElementById("documentsReceived").checked = ship.documentsReceived === "Evet";
-    document.getElementById("preArrivalsReceived").checked = ship.preArrivalsReceived === "Evet";
-
-    deleteShip(row, ship);
-}
-
-function deleteShip(row, ship) {
-    // Tablodan satırı kaldır
-    row.parentNode.removeChild(row);
-
-    // localStorage'dan gemiyi kaldır
-    let ships = JSON.parse(localStorage.getItem("ships")) || [];
-    ships = ships.filter(storedShip => 
-        storedShip.shipName !== ship.shipName || 
-        storedShip.cargoAmount !== ship.cargoAmount ||
-        storedShip.cargoType !== ship.cargoType ||
-        storedShip.arrivalPort !== ship.arrivalPort ||
-        storedShip.destinationPort !== ship.destinationPort ||
-        storedShip.employer !== ship.employer ||
-        storedShip.paymentReceived !== ship.paymentReceived ||
-        storedShip.documentsReceived !== ship.documentsReceived ||
-        storedShip.preArrivalsReceived !== ship.preArrivalsReceived
-    );
-    localStorage.setItem("ships", JSON.stringify(ships));
-}
-
-
-    </script>
 </head>
 <body>
 
@@ -219,6 +125,9 @@ function deleteShip(row, ship) {
             <input type="checkbox" id="preArrivalsReceived"> Pre-arrivallar Alındı mı?
         </label>
 
+        <label for="eta">ETA (Estimated Time of Arrival):</label>
+        <input type="datetime-local" id="eta" required>
+
         <button type="button" onclick="addShip()">Gemi Ekle</button>
     </form>
 
@@ -234,6 +143,7 @@ function deleteShip(row, ship) {
                 <th>Ödeme Alındı mı?</th>
                 <th>Yük Evrakları Alındı mı?</th>
                 <th>Pre-arrivallar Alındı mı?</th>
+                <th>ETA</th>
                 <th>İşlemler</th>
             </tr>
         </thead>
@@ -242,7 +152,100 @@ function deleteShip(row, ship) {
         </tbody>
     </table>
 
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", loadShips);
+
+        function addShip() {
+            const shipName = document.getElementById("shipName").value;
+            const cargoAmount = document.getElementById("cargoAmount").value;
+            const cargoType = document.getElementById("cargoType").value;
+            const arrivalPort = document.getElementById("arrivalPort").value;
+            const destinationPort = document.getElementById("destinationPort").value;
+            const employer = document.getElementById("employer").value;
+            const paymentReceived = document.getElementById("paymentReceived").checked ? "Evet" : "Hayır";
+            const documentsReceived = document.getElementById("documentsReceived").checked ? "Evet" : "Hayır";
+            const preArrivalsReceived = document.getElementById("preArrivalsReceived").checked ? "Evet" : "Hayır";
+            const eta = document.getElementById("eta").value;
+
+            const newShip = {
+                shipName, cargoAmount, cargoType, arrivalPort, destinationPort, employer, paymentReceived, documentsReceived, preArrivalsReceived, eta
+            };
+
+            let ships = JSON.parse(localStorage.getItem("ships")) || [];
+            ships.push(newShip);
+            localStorage.setItem("ships", JSON.stringify(ships));
+
+            appendShipToTable(newShip);
+            document.getElementById("shipForm").reset();
+        }
+
+        function appendShipToTable(ship) {
+            const table = document.getElementById("shipTable").getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+
+            newRow.insertCell(0).innerText = ship.shipName;
+            newRow.insertCell(1).innerText = ship.cargoAmount;
+            newRow.insertCell(2).innerText = ship.cargoType;
+            newRow.insertCell(3).innerText = ship.arrivalPort;
+            newRow.insertCell(4).innerText = ship.destinationPort;
+            newRow.insertCell(5).innerText = ship.employer;
+            newRow.insertCell(6).innerText = ship.paymentReceived;
+            newRow.insertCell(7).innerText = ship.documentsReceived;
+            newRow.insertCell(8).innerText = ship.preArrivalsReceived;
+            newRow.insertCell(9).innerText = ship.eta;
+
+            const actionsCell = newRow.insertCell(10);
+            const editButton = document.createElement("button");
+            editButton.innerText = "Düzenle";
+            editButton.onclick = function() { editShip(newRow, ship); };
+            const deleteButton = document.createElement("button");
+            deleteButton.innerText = "Sil";
+            deleteButton.onclick = function() { deleteShip(newRow, ship); };
+            
+            actionsCell.classList.add('action-buttons');
+            actionsCell.appendChild(editButton);
+            actionsCell.appendChild(deleteButton);
+        }
+
+        function editShip(row, ship) {
+            document.getElementById("shipName").value = ship.shipName;
+            document.getElementById("cargoAmount").value = ship.cargoAmount;
+            document.getElementById("cargoType").value = ship.cargoType;
+            document.getElementById("arrivalPort").value = ship.arrivalPort;
+            document.getElementById("destinationPort").value = ship.destinationPort;
+            document.getElementById("employer").value = ship.employer;
+            document.getElementById("paymentReceived").checked = ship.paymentReceived === "Evet";
+            document.getElementById("documentsReceived").checked = ship.documentsReceived === "Evet";
+            document.getElementById("preArrivalsReceived").checked = ship.preArrivalsReceived === "Evet";
+            document.getElementById("eta").value = ship.eta;
+
+            deleteShip(row, ship);
+        }
+
+        function deleteShip(row, ship) {
+            row.parentNode.removeChild(row);
+
+            let ships = JSON.parse(localStorage.getItem("ships")) || [];
+            ships = ships.filter(storedShip => 
+                storedShip.shipName !== ship.shipName || 
+                storedShip.cargoAmount !== ship.cargoAmount ||
+                storedShip.cargoType !== ship.cargoType ||
+                storedShip.arrivalPort !== ship.arrivalPort ||
+                storedShip.destinationPort !== ship.destinationPort ||
+                storedShip.employer !== ship.employer ||
+                storedShip.paymentReceived !== ship.paymentReceived ||
+                storedShip.documentsReceived !== ship.documentsReceived ||
+                storedShip.preArrivalsReceived !== ship.preArrivalsReceived ||
+                storedShip.eta !== ship.eta
+            );
+            localStorage.setItem("ships", JSON.stringify(ships));
+        }
+
+        function loadShips() {
+            const ships = JSON.parse(localStorage.getItem("ships")) || [];
+            ships.forEach(ship => appendShipToTable(ship));
+        }
+    </script>
 
 </body>
 </html>
