@@ -162,10 +162,22 @@ function editShip(row, ship) {
 }
 
 function deleteShip(row, ship) {
+    // Tablodan satırı kaldır
     row.parentNode.removeChild(row);
 
+    // localStorage'dan gemiyi kaldır
     let ships = JSON.parse(localStorage.getItem("ships")) || [];
-    ships = ships.filter(storedShip => storedShip !== ship);
+    ships = ships.filter(storedShip => 
+        storedShip.shipName !== ship.shipName || 
+        storedShip.cargoAmount !== ship.cargoAmount ||
+        storedShip.cargoType !== ship.cargoType ||
+        storedShip.arrivalPort !== ship.arrivalPort ||
+        storedShip.destinationPort !== ship.destinationPort ||
+        storedShip.employer !== ship.employer ||
+        storedShip.paymentReceived !== ship.paymentReceived ||
+        storedShip.documentsReceived !== ship.documentsReceived ||
+        storedShip.preArrivalsReceived !== ship.preArrivalsReceived
+    );
     localStorage.setItem("ships", JSON.stringify(ships));
 }
 
