@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemi Takip Sistemi</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #eef2f3;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            color: #004a8f;
+            margin-bottom: 40px;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        input[type="text"], input[type="number"], select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="checkbox"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+            margin-bottom: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #004a8f;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #003366;
+        }
+        table {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            border-collapse: collapse;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #004a8f;
+            color: #fff;
+        }
+        tbody tr:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .action-buttons button {
+            padding: 8px 12px;
+            background-color: #004a8f;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .action-buttons button:hover {
+            background-color: #003366;
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", loadShips);
+
+function addShip() {
+    const shipName = document.getElementById("shipName").value;
+    const cargoAmount = document.getElementById("cargoAmount").value;
+    const cargoType = document.getElementById("cargoType").value;
+    const arrivalPort = document.getElementById("arrivalPort").value;
+    const destinationPort = document.getElementById("destinationPort").value;
+    const employer = document.getElementById("employer").value;
+    const paymentReceived = document.getElementById("paymentReceived").checked ? "Evet" : "Hayır";
+    const documentsReceived = document.getElementById("documentsReceived").checked ? "Evet" : "Hayır";
+    const preArrivalsReceived = document.getElementById("preArrivalsReceived").checked ? "Evet" : "Hayır";
+
+    const newShip = {
+        shipName, cargoAmount, cargoType, arrivalPort, destinationPort, employer, paymentReceived, documentsReceived, preArrivalsReceived
+    };
+
+    let ships = JSON.parse(localStorage.getItem("ships")) || [];
+    ships.push(newShip);
+    localStorage.setItem("ships", JSON.stringify(ships));
+
+    appendShipToTable(newShip);
+    document.getElementById("shipForm").reset();
+}
+
+function appendShipToTable(ship) {
+    const table = document.getElementById("shipTable").getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow();
+
+    newRow.insertCell(0).innerText = ship.shipName;
+    newRow.insertCell(1).innerText = ship.cargoAmount;
+    newRow.insertCell(2).innerText = ship.cargoType;
+    newRow.insertCell(3).innerText = ship.arrivalPort;
+    newRow.insertCell(4).innerText = ship.destinationPort;
+    newRow.insertCell(5).innerText = ship.employer;
+    newRow.insertCell(6).innerText = ship.paymentReceived;
+    newRow.insertCell(7).innerText = ship.documentsReceived;
+    newRow.insertCell(8).innerText = ship.preArrivalsReceived;
+
+    const actionsCell = newRow.insertCell(9);
+    const editButton = document.createElement("button");
+    editButton.innerText = "Düzenle";
+    editButton.onclick = function() { editShip(newRow, ship); };
+    const deleteButton = document.createElement("button");
+    deleteButton.innerText = "Sil";
+    deleteButton.onclick = function() { deleteShip(newRow, ship); };
+    
+    actionsCell.classList.add('action-buttons');
+    actionsCell.appendChild(editButton);
+    actionsCell.appendChild(deleteButton);
+}
+
+function loadShips() {
+    const ships = JSON.parse(localStorage.getItem("ships")) || [];
+    ships.forEach(ship => appendShipToTable(ship));
+}
+
+function editShip(row, ship) {
+    document.getElementById("shipName").value = ship.shipName;
+    document.getElementById("cargoAmount").value = ship.cargoAmount;
+    document.getElementById("cargoType").value = ship.cargoType;
+    document.getElementById("arrivalPort").value = ship.arrivalPort;
+    document.getElementById("destinationPort").value = ship.destinationPort;
+    document.getElementById("employer").value = ship.employer;
+    document.getElementById("paymentReceived").checked = ship.paymentReceived === "Evet";
+    document.getElementById("documentsReceived").checked = ship.documentsReceived === "Evet";
+    document.getElementById("preArrivalsReceived").checked = ship.preArrivalsReceived === "Evet";
+
+    deleteShip(row, ship);
+}
+
+function deleteShip(row, ship) {
+    row.parentNode.removeChild(row);
+
+    let ships = JSON.parse(localStorage.getItem("ships")) || [];
+    ships = ships.filter(storedShip => storedShip !== ship);
+    localStorage.setItem("ships", JSON.stringify(ships));
+}
+
+
+    </script>
+</head>
+<body>
+
+    <h1>Gemi Takip Sistemi</h1>
+
+    <form id="shipForm">
+        <label for="shipName">Gemi Adı:</label>
+        <input type="text" id="shipName" required>
+
+        <label for="cargoAmount">Yük Miktarı:</label>
+        <input type="number" id="cargoAmount" required>
+
+        <label for="cargoType">Yük Cinsi:</label>
+        <input type="text" id="cargoType" required>
+
+        <label for="arrivalPort">Geliş Limanı:</label>
+        <input type="text" id="arrivalPort" required>
+
+        <label for="destinationPort">Varış Limanı:</label>
+        <input type="text" id="destinationPort" required>
+
+        <label for="employer">İşveren:</label>
+        <input type="text" id="employer" required>
+
+        <label for="paymentReceived">
+            <input type="checkbox" id="paymentReceived"> Ödeme Alındı mı?
+        </label>
+
+        <label for="documentsReceived">
+            <input type="checkbox" id="documentsReceived"> Yük Evrakları Alındı mı?
+        </label>
+
+        <label for="preArrivalsReceived">
+            <input type="checkbox" id="preArrivalsReceived"> Pre-arrivallar Alındı mı?
+        </label>
+
+        <button type="button" onclick="addShip()">Gemi Ekle</button>
+    </form>
+
+    <table id="shipTable">
+        <thead>
+            <tr>
+                <th>Gemi Adı</th>
+                <th>Yük Miktarı</th>
+                <th>Yük Cinsi</th>
+                <th>Geliş Limanı</th>
+                <th>Varış Limanı</th>
+                <th>İşveren</th>
+                <th>Ödeme Alındı mı?</th>
+                <th>Yük Evrakları Alındı mı?</th>
+                <th>Pre-arrivallar Alındı mı?</th>
+                <th>İşlemler</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Gemi bilgileri buraya eklenecek -->
+        </tbody>
+    </table>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
